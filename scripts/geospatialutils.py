@@ -557,7 +557,6 @@ def create_downstream_point_vector(vector_line_path, dem_path, output_path, inpu
                 output_layer.SetFeature(output_feature)
 
 
-
 def calculate_drainage_area(workspace_dir, dem_path, watershed_path, stream_path, darea_csv_path, pour_pts_path):
     """ """
     #dem_info = pygeo.geoprocessing.get_raster_info(dem_path)
@@ -580,31 +579,25 @@ def calculate_drainage_area(workspace_dir, dem_path, watershed_path, stream_path
     
     burned_streams_path = os.path.join(workspace_dir, 'burned_streams_state.tif')
     print('create new raster')
-    #pygeo.geoprocessing.new_raster_from_base(
     pygeoprocessing.new_raster_from_base(
         dem_clipped_extent_path, burned_streams_path, gdal.GDT_Int32, [dem_nodata], 
         fill_value_list=[0])
     print('burn stream layer')
 
-    #pygeo.geoprocessing.rasterize(clipped_streams_path, burned_streams_path, [1], ['ALL_TOUCHED=TRUE'])
     pygeoprocessing.rasterize(clipped_streams_path, burned_streams_path, [1], ['ALL_TOUCHED=TRUE'])
 
-    #burned_raster_info = pygeo.geoprocessing.get_raster_info(burned_streams_path)
     burned_raster_info = pygeoprocessing.get_raster_info(burned_streams_path)
     burned_raster_nodata = burned_raster_info['nodata'][0]
     
-    #dem_raster_info = pygeo.geoprocessing.get_raster_info(dem_clipped_extent_path)
     dem_raster_info = pygeoprocessing.get_raster_info(dem_clipped_extent_path)
     dem_raster_nodata = dem_raster_info['nodata'][0]
     
     tmp_stats_path = os.path.join(workspace_dir, "tmp_stats_raster.tif")
-    #pygeo.geoprocessing.calculate_raster_stats(dem_clipped_extent_path)
     def identity_op(x):
         return x
     pygeoprocessing.raster_calculator([(dem_clipped_extent_path, 1)], 
         identity_op, tmp_stats_path, gdal.GDT_Int32, dem_raster_nodata, calc_raster_stats=True)
         
-    #raster_ds = gdal.OpenEx(dem_clipped_extent_path, gdal.OF_RASTER)
     raster_ds = gdal.OpenEx(tmp_stats_path, gdal.OF_RASTER)
     raster_band = raster_ds.GetRasterBand(1)
     raster_stats = raster_band.GetStatistics(True,True)
