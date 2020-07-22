@@ -1,0 +1,35 @@
+Required Packages
+
+- numpy (Gohlke for Windows) numpy-1.14.5+mkl-cp27-cp27m-win32.whl
+- scipy (Gohlke for Windows) scipy-1.1.0-cp27-cp27m-win32.whl
+- scikit-learn
+- scikit-image
+- pandas
+- matplotlib
+
+How To:
+
+WINDOWS:
+First install numpy. If you're on Windows download numpy via the below link:
+https://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy
+
+Make sure that you download the version for you, for me it's python 2.7 and win 32, 
+but perhaps you're running Python 3.6 and win 64 (probably)
+Once downloaded do:
+
+>> pip install numpy-1.14.5+mkl-cp27-cp27m-win32.whl
+
+This can be done from the command line
+
+Do the same for Scipy
+
+** When a package doesn't install via pip for Windows download and install from https://www.lfd.uci.edu/~gohlke/pythonlibs/ **
+
+MAC / Linux: ( I think )
+>> pip install numpy
+>> pip install scipy
+>> pip install scikit-learn
+>> pip install scikit-image
+>> pip install pandas
+>> pip install matplotlib
+
