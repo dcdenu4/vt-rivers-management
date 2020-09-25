@@ -5,10 +5,9 @@ import sys
 import tempfile
 from decimal import Decimal
 
-import pandas as pd
-import numpy as np
+import pandas
+import numpy
 
-#import pygeoprocessing as pygeo
 import pygeoprocessing
 import pygeoprocessing.routing.routing as routing
 
@@ -45,11 +44,8 @@ def sample_values_to_points(raster_path, vector_path, output_path):
     vector_path (string) - 
     output_path (string) - 
     
-    
-    
     """
     
-    #raster_info = pygeo.geoprocessing.get_raster_info(raster_path)
     raster_info = pygeoprocessing.get_raster_info(raster_path)
     
     raster_ds = gdal.OpenEx(raster_path, gdal.OF_RASTER)
@@ -87,7 +83,6 @@ def sample_values_to_points(raster_path, vector_path, output_path):
         output_layer.CreateField(output_field_defn)
         
         out_dfn = output_layer.GetLayerDefn()
-        #print(out_dfn.GetFieldCount())
             
         for point_feature in layer:
 
@@ -114,7 +109,6 @@ def sample_values_to_points(raster_path, vector_path, output_path):
             
             raster_val = raster_band.ReadAsArray(px, py, 1, 1)
             raster_val = raster_val.flatten()
-            #print(raster_val)
             
             output_feature.SetField(new_field_index, raster_val[0])
   
@@ -122,7 +116,9 @@ def sample_values_to_points(raster_path, vector_path, output_path):
             output_feature = None
             point_feature = None          
 
-def vector_intersection(input_vector_path, input_vector_layers, method_vector_path, result_vector_path):
+def vector_intersection(
+        input_vector_path, input_vector_layers, method_vector_path, 
+        result_vector_path):
     """ """
     input_vector = gdal.OpenEx(input_vector_path)
     method_vector = gdal.OpenEx(method_vector_path)
@@ -143,7 +139,9 @@ def vector_intersection(input_vector_path, input_vector_layers, method_vector_pa
             
         input_layer.Intersection(method_layer, output_layer)
 
-def clip_vectors(input_vector_path, input_vector_layers, method_vector_path, result_vector_path):
+def clip_vectors(
+        input_vector_path, input_vector_layers, method_vector_path,
+        result_vector_path):
     """ """
     input_vector = gdal.OpenEx(input_vector_path)
     method_vector = gdal.OpenEx(method_vector_path)
@@ -166,8 +164,6 @@ def clip_vectors(input_vector_path, input_vector_layers, method_vector_path, res
         
 def buffer_vector(input_vector_path, buffer_vector_path, buffer_distance):
     """ """
-    
-    
     input_vector = gdal.OpenEx(input_vector_path)
     
     # create a new shapefile from the orginal_datasource
@@ -212,24 +208,21 @@ def buffer_vector(input_vector_path, buffer_vector_path, buffer_distance):
                                             
             output_layer.SetFeature(output_feature)
 
-def zonal_statistics_nominal(nominal_raster_path, zone_vector_path, target_field):
+def zonal_statistics_nominal(
+        nominal_raster_path, zone_vector_path, target_field):
     """ """
-    
-    unique_lulc = np.array([])
-    #nominal_raster_info = pygeo.geoprocessing.get_raster_info(nominal_raster_path)
+    print("zonal_stats_nominal target_field: ", target_field)
+    unique_lulc = numpy.array([])
     nominal_raster_info = pygeoprocessing.get_raster_info(nominal_raster_path)
     nominal_raster_nodata = nominal_raster_info['nodata']
-    print(nominal_raster_nodata)
     
-    #for _ , nominal_block in pygeo.geoprocessing.iterblocks(nominal_raster_path):
     for _ , nominal_block in pygeoprocessing.iterblocks(nominal_raster_path):
-        unique_block = np.unique(nominal_block)
-        set_diff = np.setdiff1d(unique_block, unique_lulc, assume_unique=True)
-        unique_lulc = np.concatenate((unique_lulc, set_diff))
+        unique_block = numpy.unique(nominal_block)
+        set_diff = numpy.setdiff1d(unique_block, unique_lulc, assume_unique=True)
+        unique_lulc = numpy.concatenate((unique_lulc, set_diff))
     
-    unique_lulc = np.setdiff1d(unique_lulc, np.array([nominal_raster_nodata]))
+    unique_lulc = numpy.setdiff1d(unique_lulc, numpy.array([nominal_raster_nodata]))
     unique_lulc_int = unique_lulc.astype(int)
-    print(unique_lulc_int)
     
     aggregate_results = {}
     
@@ -242,29 +235,24 @@ def zonal_statistics_nominal(nominal_raster_path, zone_vector_path, target_field
             tmp_raster_path = tmp_raster_file.name
         
         def mask_op(lulc_array):
-            return np.where(
-                lulc_array == nominal_raster_nodata, nominal_raster_nodata, lulc_array == lulc_val)
+            return numpy.where(
+                lulc_array == nominal_raster_nodata, nominal_raster_nodata, 
+                lulc_array == lulc_val)
             
-        #pygeo.geoprocessing.raster_calculator(
         pygeoprocessing.raster_calculator(
-            [(nominal_raster_path, 1)], mask_op, tmp_raster_path, gdal.GDT_Int32, 
-            int(nominal_raster_nodata[0]))
+            [(nominal_raster_path, 1)], mask_op, tmp_raster_path,
+            gdal.GDT_Int32, int(nominal_raster_nodata[0]))
         
-        #lulc_results = pygeo.geoprocessing.zonal_statistics(
         lulc_results = pygeoprocessing.zonal_statistics(
-            (tmp_raster_path, 1), zone_vector_path,
-            target_field, aggregate_layer_name=None,
+            (tmp_raster_path, 1), zone_vector_path, aggregate_layer_name=None,
             ignore_nodata=True, all_touched=False, polygons_might_overlap=True)
             
         for key, val in lulc_results.iteritems():
             if key not in aggregate_results:
                 aggregate_results[key] = {}
             
-            aggregate_results[key][lulc_val] = {'percent': float(Decimal('%.3f' % (100 * (val['sum'] / val['count'])))), 'count':val['sum']}
-        
-        #print(lulc_results)
-        
-    #print(aggregate_results)
+            aggregate_results[key][lulc_val] = {
+                'percent': float(Decimal('%.3f' % (100 * (val['sum'] / val['count'])))), 'count':val['sum']}
         
     return aggregate_results
     
@@ -291,15 +279,15 @@ def shape_to_csv(vector_path, csv_out_path, key_field=None, fields=None):
             data.append(tmp_dict)
             
             
-    vector_df = pd.DataFrame(data)
-    #print(vector_df.head())
+    vector_df = pandas.DataFrame(data)
     if key_field:
         vector_df.set_index(key_field)
         
     vector_df.to_csv(csv_out_path)
         
-def calculate_line_slope_from_dem(vector_line_path, dem_path, output_path, 
-                                  input_vector_id, csv_out_path, aoi_path):
+def calculate_line_slope_from_dem(
+        vector_line_path, dem_path, output_path, input_vector_id, csv_out_path,
+        aoi_path):
     """ """
     #TODO: is it possible to get length of line segment and ACTUALLY calculate
     # slope here? Need to make sure vector_line_path is projected in 
@@ -315,7 +303,8 @@ def calculate_line_slope_from_dem(vector_line_path, dem_path, output_path,
     
     # Clip streams layer to AOI if desired
     if aoi_path != None:
-        vector_clip_path = os.path.join(os.path.dirname(output_path), 'clipped_lines.shp')
+        vector_clip_path = os.path.join(
+            os.path.dirname(output_path), 'clipped_lines.shp')
         clip_vectors(vector_line_path, [0], aoi_path, vector_clip_path)
         vector_line_path = vector_clip_path
     
@@ -331,13 +320,14 @@ def calculate_line_slope_from_dem(vector_line_path, dem_path, output_path,
     vectorIDS = []
     line_slopes = []
 
-    np.seterr(all='raise')
+    numpy.seterr(all='raise')
     
     for layer_index in range(source_vector.GetLayerCount()):
         layer = source_vector.GetLayer(layer_index)
         
         output_srs = layer.GetSpatialRef()
-        output_layer = output_datasource.CreateLayer(layer.GetName(), output_srs, ogr.wkbPoint)
+        output_layer = output_datasource.CreateLayer(
+            layer.GetName(), output_srs, ogr.wkbPoint)
         
         new_types = [ogr.OFTInteger, ogr.OFTInteger, ogr.OFTString]
         new_fields = ['ID', 'ElevDiff', 'LineID']
@@ -410,15 +400,17 @@ def calculate_line_slope_from_dem(vector_line_path, dem_path, output_path,
                 output_layer.SetFeature(output_feature)
 
     df_data = {'SGAT_ID' : vectorIDS, 'ElevDiff': line_slopes}
-    df_slopes = pd.DataFrame(data=df_data)
+    df_slopes = pandas.DataFrame(data=df_data)
     df_slopes.to_csv(csv_out_path)
     
     #return vectorIDS, line_slopes
     
-def add_feature_to_shape(input_vector_path, input_csv, vector_key, csv_key, join_feature, output_path):
+def add_feature_to_shape(
+        input_vector_path, input_csv, vector_key, csv_key, join_feature,
+        output_path):
     """ """
     
-    input_df = pd.read_csv(input_csv)
+    input_df = pandas.read_csv(input_csv)
     
     input_vector = gdal.OpenEx(input_vector_path)
 
@@ -477,7 +469,8 @@ def add_feature_to_shape(input_vector_path, input_csv, vector_key, csv_key, join
                 output_layer.SetFeature(output_feature)
 
     
-def create_downstream_point_vector(vector_line_path, dem_path, output_path, input_vector_id):
+def create_downstream_point_vector(
+        vector_line_path, dem_path, output_path, input_vector_id):
     """ """
     
     dem_ds = gdal.OpenEx(dem_path, gdal.OF_RASTER)
@@ -496,7 +489,8 @@ def create_downstream_point_vector(vector_line_path, dem_path, output_path, inpu
         layer = source_vector.GetLayer(layer_index)
         
         output_srs = layer.GetSpatialRef()
-        output_layer = output_datasource.CreateLayer(layer.GetName(), output_srs, ogr.wkbPoint)
+        output_layer = output_datasource.CreateLayer(
+            layer.GetName(), output_srs, ogr.wkbPoint)
         
         new_types = [ogr.OFTInteger, ogr.OFTString]
         new_fields = ['ID', 'LineID']
@@ -557,20 +551,23 @@ def create_downstream_point_vector(vector_line_path, dem_path, output_path, inpu
                 output_layer.SetFeature(output_feature)
 
 
-def calculate_drainage_area(workspace_dir, dem_path, watershed_path, stream_path, darea_csv_path, pour_pts_path):
+def calculate_drainage_area(
+        workspace_dir, dem_path, watershed_path, stream_path, darea_csv_path,
+        pour_pts_path):
     """ """
     #dem_info = pygeo.geoprocessing.get_raster_info(dem_path)
     dem_info = pygeoprocessing.get_raster_info(dem_path)
     dem_nodata = dem_info['nodata'][0]
     
-    clipped_streams_path = os.path.join(workspace_dir, 'clipped_state_streams.shp')
+    clipped_streams_path = os.path.join(
+        workspace_dir, 'clipped_state_streams.shp')
     print('Clip state stream paths')
     clip_vectors(stream_path, [0], watershed_path, clipped_streams_path)
 
     # TODO: Instead of passing in a clipped DEM, do the clipping in house
-    dem_clipped_extent_path = os.path.join(workspace_dir, 'clipped_extent_dem.tif')
+    dem_clipped_extent_path = os.path.join(
+        workspace_dir, 'clipped_extent_dem.tif')
     print('clip dem extents')
-    #pygeo.geoprocessing.align_and_resize_raster_stack(
     pygeoprocessing.align_and_resize_raster_stack(
             [dem_path], [dem_clipped_extent_path], ['near'],
             dem_info['pixel_size'], 'intersection', 
@@ -580,11 +577,12 @@ def calculate_drainage_area(workspace_dir, dem_path, watershed_path, stream_path
     burned_streams_path = os.path.join(workspace_dir, 'burned_streams_state.tif')
     print('create new raster')
     pygeoprocessing.new_raster_from_base(
-        dem_clipped_extent_path, burned_streams_path, gdal.GDT_Int32, [dem_nodata], 
-        fill_value_list=[0])
+        dem_clipped_extent_path, burned_streams_path, gdal.GDT_Int32,
+        [dem_nodata], fill_value_list=[0])
     print('burn stream layer')
 
-    pygeoprocessing.rasterize(clipped_streams_path, burned_streams_path, [1], ['ALL_TOUCHED=TRUE'])
+    pygeoprocessing.rasterize(
+        clipped_streams_path, burned_streams_path, [1], ['ALL_TOUCHED=TRUE'])
 
     burned_raster_info = pygeoprocessing.get_raster_info(burned_streams_path)
     burned_raster_nodata = burned_raster_info['nodata'][0]
@@ -595,8 +593,9 @@ def calculate_drainage_area(workspace_dir, dem_path, watershed_path, stream_path
     tmp_stats_path = os.path.join(workspace_dir, "tmp_stats_raster.tif")
     def identity_op(x):
         return x
-    pygeoprocessing.raster_calculator([(dem_clipped_extent_path, 1)], 
-        identity_op, tmp_stats_path, gdal.GDT_Int32, dem_raster_nodata, calc_raster_stats=True)
+    pygeoprocessing.raster_calculator(
+        [(dem_clipped_extent_path, 1)], identity_op, tmp_stats_path, 
+        gdal.GDT_Int32, dem_raster_nodata, calc_raster_stats=True)
         
     raster_ds = gdal.OpenEx(tmp_stats_path, gdal.OF_RASTER)
     raster_band = raster_ds.GetRasterBand(1)
@@ -606,10 +605,10 @@ def calculate_drainage_area(workspace_dir, dem_path, watershed_path, stream_path
 
     def raise_dem_op(dem_pix, burn_pix):
         # mask for valid pixels that are NOT stream and NOT nodata
-        valid_mask = ( (dem_pix != dem_raster_nodata) & (burn_pix != burned_raster_nodata) & (burn_pix==0))
+        valid_mask = ((dem_pix != dem_raster_nodata) & (burn_pix != burned_raster_nodata) & (burn_pix==0))
         # mask for valid pixels that are stream and NOT nodata
-        valid_stream_mask = ( (dem_pix != dem_raster_nodata) & (burn_pix != burned_raster_nodata) & (burn_pix==1))
-        result = np.empty(dem_pix.shape)
+        valid_stream_mask = ((dem_pix != dem_raster_nodata) & (burn_pix != burned_raster_nodata) & (burn_pix==1))
+        result = numpy.empty(dem_pix.shape)
         result[:] = dem_raster_nodata
         result[valid_mask] = dem_pix[valid_mask] + raster_stats[1]
         result[valid_stream_mask] = dem_pix[valid_stream_mask]
@@ -617,7 +616,6 @@ def calculate_drainage_area(workspace_dir, dem_path, watershed_path, stream_path
 
     dem_burned_streams_path = os.path.join(workspace_dir, 'hydrodem_burned.tif')
     print('adjust dem to sink stream network')
-    #pygeo.geoprocessing.raster_calculator(
     pygeoprocessing.raster_calculator(
         [(dem_clipped_extent_path, 1), (burned_streams_path, 1)], raise_dem_op, 
         dem_burned_streams_path, gdal.GDT_Int32, dem_raster_nodata)
@@ -655,10 +653,9 @@ def calculate_drainage_area(workspace_dir, dem_path, watershed_path, stream_path
     flow_accum_csv_path = os.path.join(workspace_dir, 'flow_accum_table.csv')
     shape_to_csv(sampled_output_path, flow_accum_csv_path)
     
-    #flow_info = pygeo.geoprocessing.get_raster_info(flow_accum_path)
     flow_info = pygeoprocessing.get_raster_info(flow_accum_path)
     
-    da_df = pd.read_csv(flow_accum_csv_path)
+    da_df = pandas.read_csv(flow_accum_csv_path)
     #print(da_df.head())
 
     pixel_area = abs(flow_info['pixel_size'][0] * flow_info['pixel_size'][1])
@@ -667,6 +664,4 @@ def calculate_drainage_area(workspace_dir, dem_path, watershed_path, stream_path
     da_df['DA'] = drainage_area
     
     da_df.to_csv(darea_csv_path)
-    
-
     

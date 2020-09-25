@@ -2,18 +2,18 @@
 
 import os
 
-import numpy as np
-import pandas as pd
+import numpy
+import pandas
 
 
 def get_pebble_counts(workbook_dir, out_path, pebble_sheet_name, rga_path):
-    """ """
+    """TODO: Fill in docstring. """
     # Get workbook values for D16, D35, D50, D85 
     # from cells: Y30, Y31, Y32, Y33
     segment_data = []
     
     # Use the Master RGA file to match IDs
-    rga_df = pd.read_excel(rga_path)
+    rga_df = pandas.read_excel(rga_path)
 
     for root, dirs, files in os.walk(workbook_dir):
 
@@ -33,7 +33,7 @@ def get_pebble_counts(workbook_dir, out_path, pebble_sheet_name, rga_path):
             subid_len = len(segment_id_list)
             
             #print(workbook_path)
-            workbook_df = pd.read_excel(
+            workbook_df = pandas.read_excel(
                 workbook_path, sheet_name=pebble_sheet_name, header=None)
 
             pebble_sizes = ['d16', 'd35', 'd50', 'd84']
@@ -55,10 +55,10 @@ def get_pebble_counts(workbook_dir, out_path, pebble_sheet_name, rga_path):
                     segment_data.append({'SGAT_ID':sgat_p2_id_list[sub_idx], 
                                  'Project_Name':project_name,
                                  'Stream_Name':segment_name, 
-                                 'd16':np.nan, 
-                                 'd35':np.nan, 
-                                 'd50':np.nan,
-                                 'd84':np.nan})
+                                 'd16':numpy.nan, 
+                                 'd35':numpy.nan, 
+                                 'd50':numpy.nan,
+                                 'd84':numpy.nan})
 
                 else: 
                     segment_data.append({'SGAT_ID':sgat_p2_id_list[sub_idx], 
@@ -69,18 +69,18 @@ def get_pebble_counts(workbook_dir, out_path, pebble_sheet_name, rga_path):
                                      'd50':d50.iloc[sub_idx],
                                      'd84':d85.iloc[sub_idx]})
 
-    pebble_count_df = pd.DataFrame(segment_data)
+    pebble_count_df = pandas.DataFrame(segment_data)
     pebble_count_df.to_csv(out_path)
     
 def upstream_towns(upstream_csv, town_csv, key_left, key_right, result_csv):
-    """ """
-    upstream_df = pd.read_csv(upstream_csv)
-    town_df = pd.read_csv(town_csv)
+    """TODO: Fill in docstring. """
+    upstream_df = pandas.read_csv(upstream_csv)
+    town_df = pandas.read_csv(town_csv)
     
     town_id_list = town_df[key_right].tolist()
     
-    upstream_df["upstream_town"] = np.nan
-    upstream_df["upstream_dist"] = np.nan
+    upstream_df["upstream_town"] = numpy.nan
+    upstream_df["upstream_dist"] = numpy.nan
     
     # For each intersected town work back upstream and mark all 
     # those segments with being upstream of town and distance
@@ -117,8 +117,8 @@ def upstream_towns(upstream_csv, town_csv, key_left, key_right, result_csv):
     upstream_df.to_csv(result_csv)
     
 def calculate_upstream_id(input_csv, id_field, out_csv):
-    """ """
-    input_df = pd.read_excel(input_csv)
+    """TODO: Fill in docstring. """
+    input_df = pandas.read_excel(input_csv)
     
     segment_ID_column = id_field
 
@@ -185,17 +185,17 @@ def calculate_upstream_id(input_csv, id_field, out_csv):
             else:
                 upstream_list.append('None')
             
-    sorted_ids_series = pd.Series(id_sorted)
-    upstream_series = pd.Series(upstream_list)
+    sorted_ids_series = pandas.Series(id_sorted)
+    upstream_series = pandas.Series(upstream_list)
     df_data = {segment_ID_column: sorted_ids_series, 'upstream_ID': upstream_series}
-    upstream_df = pd.DataFrame(data=df_data)
+    upstream_df = pandas.DataFrame(data=df_data)
     input_upstream_merge_df = input_df.merge(upstream_df, how='left', on=segment_ID_column)
     
     input_upstream_merge_df.to_csv(out_csv)
     
 def calculate_vc_vcratio(rga_csv, id_field, upstream_id_field, out_csv):
-    """ """
-    input_df = pd.read_csv(rga_csv)
+    """TODO: Fill in docstring. """
+    input_df = pandas.read_csv(rga_csv)
 
     subset_df = input_df[[id_field, upstream_id_field, 'P2valley_width', 'bankfull_width']]
     
@@ -216,7 +216,7 @@ def calculate_vc_vcratio(rga_csv, id_field, upstream_id_field, out_csv):
         up_id = upstream_list[index]
         if up_id in id_sorted:
             cur_vc = vc_list[index]
-            if up_id == np.nan:
+            if up_id == numpy.nan:
                 continue
             elif up_id == 'None':
                 up_vc = 0.5
@@ -227,7 +227,7 @@ def calculate_vc_vcratio(rga_csv, id_field, upstream_id_field, out_csv):
             
         vc_ratio_list.append({id_field:cur_id, 'VC_RATIO': up_vc / cur_vc})
 
-    vc_ratio_df = pd.DataFrame(data=vc_ratio_list)
+    vc_ratio_df = pandas.DataFrame(data=vc_ratio_list)
     #print(subset_df.head())
 
     subset_df = subset_df.merge(vc_ratio_df, how='left', on=id_field)
@@ -239,12 +239,12 @@ def calculate_vc_vcratio(rga_csv, id_field, upstream_id_field, out_csv):
 
     
 def calculate_streampower(ssp_path, darea_path, slopes_path, data_path):
-    """ """
+    """TODO: Fill in docstring. """
     # Open DA, slope, and RGA files to get slope, DA, and width
-    darea_df = pd.read_csv(darea_path, usecols=['LineID','DA'])
-    slope_df = pd.read_csv(slopes_path, usecols=['SGAT_PID_P2','slope'])
-    #rga_df = pd.read_excel(data_path, usecols=['SGAT_PID_P2','P2valley_width','bankfull_width'])
-    rga_df = pd.read_excel(data_path)
+    darea_df = pandas.read_csv(darea_path, usecols=['LineID','DA'])
+    slope_df = pandas.read_csv(slopes_path, usecols=['SGAT_PID_P2','slope'])
+    #rga_df = pandas.read_excel(data_path, usecols=['SGAT_PID_P2','P2valley_width','bankfull_width'])
+    rga_df = pandas.read_excel(data_path)
     rga_df = rga_df.loc[:, ['SGAT_PID_P2','P2valley_width','bankfull_width']]
     # 1 foot is 0.3048 meters
     rga_df['P2valley_width_m'] = rga_df['P2valley_width'] * 0.3048
@@ -284,10 +284,10 @@ def calculate_streampower(ssp_path, darea_path, slopes_path, data_path):
     
         
 def calculate_streampower_balance(ssp_balance_path, ssp_path, upstream_ids_path):
-    """ """
+    """TODO: Fill in docstring. """
     # Open ssp and upstream ids datasets
-    ssp_df = pd.read_csv(ssp_path, usecols=['SGAT_PID_P2','ssp'])
-    upstream_df = pd.read_csv(upstream_ids_path, usecols=['SGAT_PID_P2','upstream_ID'])
+    ssp_df = pandas.read_csv(ssp_path, usecols=['SGAT_PID_P2','ssp'])
+    upstream_df = pandas.read_csv(upstream_ids_path, usecols=['SGAT_PID_P2','upstream_ID'])
     # Merge these together
     combined_df = ssp_df.merge(upstream_df, how='left', on='SGAT_PID_P2')
     
@@ -303,7 +303,7 @@ def calculate_streampower_balance(ssp_balance_path, ssp_path, upstream_ids_path)
         up_id = upstream_list[index]
         if up_id in id_sorted:
             cur_ssp = ssp_list[index]
-            if up_id == np.nan:
+            if up_id == numpy.nan:
                 continue
             elif up_id == 'None':
                 # Dumby value at the moment in case there is no upstream
@@ -323,6 +323,6 @@ def calculate_streampower_balance(ssp_balance_path, ssp_path, upstream_ids_path)
     
         ssp_bal_list.append({'SGAT_PID_P2':cur_id, 'ssp_bal': ssp_bal})
 
-    ssp_bal_df = pd.DataFrame(data=ssp_bal_list)
+    ssp_bal_df = pandas.DataFrame(data=ssp_bal_list)
     
     ssp_bal_df.to_csv(ssp_balance_path)
