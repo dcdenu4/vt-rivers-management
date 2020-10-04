@@ -1,0 +1,7 @@
+numpy
+scipy
+cython
+rtree
+shapely
+gdal==3.1.2
+pygeoprocessing=2.1.1
