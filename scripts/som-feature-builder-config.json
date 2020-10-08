@@ -1,0 +1,12 @@
+{
+
+"workspace_dir" : "C://Users//ddenu//Workspace//UVM//feature_build_winooski",
+"tabular_data_path" : "C://Users//denu//Desktop//Preprocess Data Workspace//Tabular//RGA",
+"rga_data_path" : "C://Users//denu//Desktop//Preprocess Data Workspace//Tabular//RGA//Winooski//Winooski_P1P2_All_Wino_Projects.xls",
+"dem_path" : "C://Users//denu//Desktop//Preprocess Data Workspace//Geospatial//ElevationDEM_VTHYDRODEM//vthydrodem//hdr.adf",
+"workbook_parent_dir" : "C://Users//denu//Desktop//Preprocess Data Workspace//Tabular//RGA//Winooski//Workbooks",
+"watershed_path" : "C://Users//denu//Desktop//Preprocess Data Workspace//Geospatial//Winooski//Winooski_Watershed.shp",
+"segment_line_path" : "C://Users//denu//desktop//Preprocess Data Workspace//Geospatial//SGA_Phase_2_Assessed_Reaches//SGA_Phase_2_Assessed_Reaches.shp",
+"hydrography_stream_path" : "C://Users//denu//Desktop//Preprocess Data Workspace//Geospatial//VT_Hydrography_Dataset_cartographic_extract_lines//VT_Hydrography_Dataset__cartographic_extract_lines.shp",
+
+}
